@@ -2,22 +2,19 @@ module JSON
   class Schema
     class ValidationError < StandardError
       INDENT = "    "
-      attr_accessor :fragments, :schema, :failed_attribute, :sub_errors, :message
+      attr_accessor :sub_errors
 
-      def initialize(message, fragments, failed_attribute, schema)
-        @fragments = fragments.clone
-        @schema = schema
+      def initialize data = {}
+        @data = data.freeze
         @sub_errors = {}
-        @failed_attribute = failed_attribute
-        @message = message
         super(message_with_schema)
       end
 
       def to_string(subschema_level = 0)
         if @sub_errors.empty?
-          subschema_level == 0 ? message_with_schema : message
+          subschema_level == 0 ? message_with_schema : @data[:message]
         else
-          messages = ["#{message}. The schema specific errors were:\n"]
+          messages = ["#{@data[:message]}. The schema specific errors were:\n"]
           @sub_errors.each do |subschema, errors|
             messages.push "- #{subschema}:"
             messages.concat Array(errors).map { |e| "#{INDENT}- #{e.to_string(subschema_level + 1)}" }
@@ -27,7 +24,16 @@ module JSON
       end
 
       def to_hash
-        base = {:schema => @schema.uri, :fragment => ::JSON::Schema::Attribute.build_fragment(fragments), :message => message_with_schema, :failed_attribute => @failed_attribute.to_s.split(":").last.split("Attribute").first}
+        base = {
+            :schema => @data[:schema].uri,
+            :fragment => ::JSON::Schema::Attribute.build_fragment(@data[:fragments]),
+            :message => message_with_schema,
+            :failed_attribute => @data[:failed_attribute].to_s.split(":").last.split("Attribute").first,
+            :data => @data[:failed_attribute],
+            :orig_message => @data[:message],
+            :fragments => @data[:fragments],
+            :orig_schema => @data[:schema]
+        }
         if !@sub_errors.empty?
           base[:errors] = @sub_errors.inject({}) do |hsh, (subschema, errors)|
             subschema_sym = subschema.downcase.gsub(/\W+/, '_').to_sym
@@ -39,7 +45,7 @@ module JSON
       end
 
       def message_with_schema
-        "#{message} in schema #{schema.uri}"
+        "#{@data[:message]} in schema #{@data[:schema].uri}"
       end
     end
   end
