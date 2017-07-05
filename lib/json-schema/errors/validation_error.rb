@@ -24,16 +24,10 @@ module JSON
       end
 
       def to_hash
-        base = {
-            :schema => @data[:schema].uri,
+        base = @data.merge({
             :fragment => ::JSON::Schema::Attribute.build_fragment(@data[:fragments]),
-            :message => message_with_schema,
             :failed_attribute => @data[:failed_attribute].to_s.split(":").last.split("Attribute").first,
-            :data => @data[:failed_attribute],
-            :orig_message => @data[:message],
-            :fragments => @data[:fragments],
-            :orig_schema => @data[:schema]
-        }
+        })
         if !@sub_errors.empty?
           base[:errors] = @sub_errors.inject({}) do |hsh, (subschema, errors)|
             subschema_sym = subschema.downcase.gsub(/\W+/, '_').to_sym
