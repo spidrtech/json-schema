@@ -48,7 +48,7 @@ module JSON
           message = "The property '#{build_fragment(fragments)}' of type #{type_of_data(data)} matched more than one of the required schemas"
         end
 
-        validation_error(processor, message, fragments, current_schema, self, options[:record_errors]) if message
+        validation_error(processor, message: message, fragments: fragments, schema: current_schema, failed_attribute: self, record_errors: options[:record_errors]) if message
         validation_errors(processor).last.sub_errors = errors if message
       end
     end

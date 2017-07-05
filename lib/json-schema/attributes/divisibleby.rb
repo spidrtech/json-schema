@@ -14,7 +14,7 @@ module JSON
 
         if factor == 0 || factor == 0.0 || (BigDecimal.new(data.to_s) % BigDecimal.new(factor.to_s)).to_f != 0
           message = "The property '#{build_fragment(fragments)}' was not divisible by #{factor}"
-          validation_error(processor, message, fragments, current_schema, self, options[:record_errors])
+          validation_error(processor, message: message, fragments: fragments, schema: current_schema, failed_attribute: self, record_errors: options[:record_errors])
         end
       end
     end

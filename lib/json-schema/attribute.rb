@@ -10,8 +10,9 @@ module JSON
         "#/#{fragments.join('/')}"
       end
 
-      def self.validation_error(processor, message, fragments, current_schema, failed_attribute, record_errors)
-        error = ValidationError.new(message: message, fragments: fragments, failed_attribute: failed_attribute, schema: current_schema)
+      def self.validation_error(processor, args = {})
+        record_errors = args.delete(:record_errors)
+        error = ValidationError.new(args)
         if record_errors
           processor.validation_error(error)
         else
